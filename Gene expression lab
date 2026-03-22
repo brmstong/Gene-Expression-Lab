@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hydrangea Colour Lab</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; font-size: 15px; line-height: 1.6; }
+  .lab { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; color: #1a3f6f; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+  .stabs { display: flex; gap: 4px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .stab { font-size: 12px; padding: 6px 14px; border: 1px solid #ccc; border-radius: 20px; background: #fff; color: #555; cursor: pointer; transition: all 0.15s; }
+  .stab:hover { background: #f0f0f0; }
+  .stab.active { background: #1a3f6f; border-color: #1a3f6f; color: #fff; font-weight: 500; }
+  .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .card-blue { background: #e8f0fc; border-color: #b0c8f0; }
+  .card-green { background: #eaf3de; border-color: #97c459; }
+  .card-red { background: #fcebeb; border-color: #f09595; }
+  .stitle { font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+  .hidden { display: none; }
+  .run-btn { width: 100%; padding: 11px; font-size: 14px; font-weight: 600; background: #1a3f6f; border: none; color: #fff; border-radius: 8px; cursor: pointer; margin-bottom: 1rem; transition: background 0.15s; }
+  .run-btn:hover { background: #2d5fa0; }
+  .run-btn:active { transform: scale(0.99); }
+  .again-btn { width: 100%; padding: 11px; font-size: 14px; font-weight: 500; background: #fff; border: 1px solid #ccc; color: #333; border-radius: 8px; cursor: pointer; margin-bottom: 1rem; transition: background 0.15s; }
+  .again-btn:hover { background: #f5f5f5; }
+  .check-btn { font-size: 12px; padding: 6px 16px; border: 1px solid #bbb; border-radius: 20px; background: #f5f5f5; color: #333; cursor: pointer; margin-top: 10px; display: inline-block; transition: background 0.15s; }
+  .check-btn:hover { background: #e8e8e8; }
+  .lbl { font-size: 13px; color: #555; margin-bottom: 4px; }
+  .lbl strong { color: #1a1a1a; font-weight: 600; }
+  .slrow { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .slrow input[type=range] { flex: 1; accent-color: #1a3f6f; }
+  .tick { font-size: 11px; color: #888; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media(max-width:600px){ .grid2 { grid-template-columns: 1fr; } }
+  .cblist { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+  .cbitem { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1a1a1a; padding: 7px 10px; border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; transition: all 0.12s; }
+  .cbitem:hover { background: #f8f8f8; }
+  .cbitem input[type=checkbox] { width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; accent-color: #27500A; }
+  .cbitem .cb-text { flex: 1; }
+  .cbitem .cb-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; display: none; }
+  .cbitem.checked { background: #eaf3de; border-color: #97c459; }
+  .cbitem.rev-good   { background: #eaf3de; border-color: #639922; }
+  .cbitem.rev-bad    { background: #fcebeb; border-color: #f09595; }
+  .cbitem.rev-missed { background: #faeeda; border-color: #ef9f27; }
+  .cbitem.rev-good   .cb-badge { display: inline; background: #c0dd97; color: #27500A; }
+  .cbitem.rev-bad    .cb-badge { display: inline; background: #f7c1c1; color: #791F1F; }
+  .cbitem.rev-missed .cb-badge { display: inline; background: #fac775; color: #412402; }
+  .mbtns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .mbtn { font-size: 12px; padding: 6px 13px; border: 1px solid #ccc; border-radius: 20px; background: #fff; color: #555; cursor: pointer; transition: all 0.12s; }
+  .mbtn:hover { background: #f0f0f0; }
+  .mbtn.active { background: #1a3f6f; border-color: #1a3f6f; color: #fff; font-weight: 600; }
+  .fb { font-size: 13px; margin-top: 10px; padding: 9px 13px; border-radius: 8px; line-height: 1.55; }
+  .fb-ok   { background: #eaf3de; border: 1px solid #97c459; color: #27500A; }
+  .fb-warn { background: #faeeda; border: 1px solid #ef9f27; color: #633806; }
+  .fb-hint { background: #faeeda; border: 1px solid #ef9f27; color: #633806; }
+  .fb-good { background: #eaf3de; border: 1px solid #97c459; color: #27500A; }
+  .ph-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1rem; }
+  @media(max-width:500px){ .ph-grid { grid-template-columns: repeat(3,1fr); } }
+  .ph-card { border: 1px solid #ddd; border-radius: 10px; padding: 10px 8px; text-align: center; background: #fff; transition: border-color 0.15s; }
+  .ph-label { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+  .ph-gene { font-size: 10px; padding: 2px 7px; border-radius: 20px; display: inline-block; margin-bottom: 8px; font-weight: 600; }
+  .ph-btn { font-size: 12px; padding: 6px 0; width: 100%; border: 1px solid #1a3f6f; border-radius: 8px; background: #e8f0fc; color: #1a3f6f; cursor: pointer; font-weight: 600; transition: all 0.12s; }
+  .ph-btn:hover { background: #b0c8f0; }
+  .ph-btn.done { background: #eaf3de; border-color: #639922; color: #27500A; }
+  .ph-reps { font-size: 11px; color: #777; margin-top: 6px; min-height: 28px; line-height: 1.4; }
+  .ph-swatch { width: 30px; height: 30px; border-radius: 50%; margin: 0 auto 6px; border: 1px solid rgba(0,0,0,0.12); background: #e8e8e8; transition: background 0.3s; }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 4px; border: 1px solid rgba(0,0,0,0.1); }
+  .res-tbl { width: 100%; font-size: 12px; border-collapse: collapse; }
+  .res-tbl th { font-weight: 600; font-size: 11px; color: #555; padding: 6px 8px; border-bottom: 1px solid #ddd; text-align: left; white-space: nowrap; background: #f8f8f8; }
+  .res-tbl td { padding: 6px 8px; border-bottom: 1px solid #eee; color: #1a1a1a; font-size: 12px; vertical-align: middle; }
+  .res-tbl tr:last-child td { border-bottom: none; }
+  .overall-con { border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; border: 2px solid; }
+  .overall-con.high { background: #eaf3de; border-color: #639922; }
+  .overall-con.mid  { background: #faeeda; border-color: #ef9f27; }
+  .overall-con.low  { background: #fcebeb; border-color: #f09595; }
+  .write-prompt { font-size: 13px; padding: 10px 14px; border-radius: 8px; background: #e8f0fc; border: 1px solid #b0c8f0; color: #1a3f6f; margin-bottom: 1rem; font-weight: 500; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-right: 4px; }
+  .setup-note { font-size: 12px; padding: 7px 12px; border-radius: 8px; background: #f5f5f5; border: 1px solid #e0e0e0; color: #555; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="lab">
+  <h1>Hydrangea Colour Lab</h1>
+  <p class="subtitle">Gene expression, validity, reliability &amp; accuracy</p>
+
+  <div class="stabs">
+    <button class="stab active" onclick="go(0)">1. Gene expression</button>
+    <button class="stab" onclick="go(1)">2. Design experiment</button>
+    <button class="stab" onclick="go(2)">3. Run trials</button>
+    <button class="stab" onclick="go(3)">4. Analyse results</button>
+  </div>
+
+  <!-- STEP 0 -->
+  <div id="s0">
+    <div class="card card-blue">
+      <div class="stitle" style="color:#1a3f6f;">How pH controls flower colour</div>
+      <p style="font-size:13px; color:#0C447C; line-height:1.6; margin-bottom:12px;">Hydrangeas have a gene that codes for making <strong>anthocyanin</strong> — a blue pigment. Whether that gene is switched ON or OFF depends on soil pH. The DNA sequence does not change — only whether the gene is expressed.</p>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <div class="card card-green" style="flex:1; min-width:170px; margin:0; padding:10px 14px;">
+          <div style="font-size:11px; font-weight:600; color:#27500A; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Gene ON — acidic (pH 4–6)</div>
+          <div style="font-size:12px; color:#27500A; line-height:1.6;">Low pH → gene switched ON → anthocyanin made → <strong>blue/purple flowers</strong></div>
+          <div style="margin-top:8px; text-align:center;"><svg width="32" height="32" viewBox="0 0 40 40"><ellipse cx="20" cy="8" rx="6" ry="9" fill="#3066be" opacity="0.85"/><ellipse cx="32" cy="20" rx="9" ry="6" fill="#3066be" opacity="0.85"/><ellipse cx="20" cy="32" rx="6" ry="9" fill="#3066be" opacity="0.85"/><ellipse cx="8" cy="20" rx="9" ry="6" fill="#3066be" opacity="0.85"/><circle cx="20" cy="20" r="5" fill="#f5c518"/></svg></div>
+        </div>
+        <div class="card card-red" style="flex:1; min-width:170px; margin:0; padding:10px 14px;">
+          <div style="font-size:11px; font-weight:600; color:#791F1F; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Gene OFF — alkaline (pH 7–8)</div>
+          <div style="font-size:12px; color:#791F1F; line-height:1.6;">High pH → gene switched OFF → no anthocyanin → <strong>pink/red flowers</strong></div>
+          <div style="margin-top:8px; text-align:center;"><svg width="32" height="32" viewBox="0 0 40 40"><ellipse cx="20" cy="8" rx="6" ry="9" fill="#d4537e" opacity="0.85"/><ellipse cx="32" cy="20" rx="9" ry="6" fill="#d4537e" opacity="0.85"/><ellipse cx="20" cy="32" rx="6" ry="9" fill="#d4537e" opacity="0.85"/><ellipse cx="8" cy="20" rx="9" ry="6" fill="#d4537e" opacity="0.85"/><circle cx="20" cy="20" r="5" fill="#f5c518"/></svg></div>
+        </div>
+      </div>
+      <p style="font-size:12px; color:#185FA5; margin-top:10px; padding-top:8px; border-top:1px solid #b0c8f0;">The DNA sequence is the same in both — only the environment determines whether the gene is expressed.</p>
+    </div>
+    <div style="text-align:center;"><button class="run-btn" style="max-width:260px;" onclick="go(1)">Design your experiment →</button></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div id="s1" class="hidden">
+    <div class="grid2">
+      <div class="card">
+        <div class="stitle">Repeats per pH value</div>
+        <div class="lbl">Number of repeats: <strong id="rep-v">1</strong></div>
+        <div class="slrow">
+          <span class="tick">1</span>
+          <input type="range" min="1" max="8" value="1" step="1" id="rep-slider">
+          <span class="tick">8</span>
+        </div>
+        <button class="check-btn" id="rel-check-btn">Check my repeats choice</button>
+        <div id="rel-fb" class="hidden"></div>
+        <div class="stitle" style="margin-top:16px;">Measurement method</div>
+        <div class="mbtns" id="mbtns"></div>
+        <div id="acc-fb" class="hidden"></div>
+      </div>
+      <div class="card">
+        <div class="stitle">Control variables — tick everything you will keep constant</div>
+        <p style="font-size:12px; color:#555; margin-bottom:8px; line-height:1.5;">Which of these should stay the same across all your trials?</p>
+        <div class="cblist" id="cblist"></div>
+        <button class="check-btn" id="val-check-btn">Check my choices</button>
+        <div id="val-fb" class="hidden"></div>
+      </div>
+    </div>
+    <div style="text-align:center;"><button class="run-btn" style="max-width:260px;" onclick="go(2)">Go to trials →</button></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="s2" class="hidden">
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="stitle">Your experiment setup</div>
+      <div id="setup-sum" style="font-size:13px; color:#555; line-height:1.8;"></div>
+    </div>
+    <p style="font-size:13px; color:#555; margin-bottom:10px; line-height:1.5;">Press <strong>Run trial</strong> for each pH value. The same number of repeats runs automatically each time.</p>
+    <div class="ph-grid" id="ph-grid"></div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div class="stitle" style="margin:0;">Results</div>
+        <button id="clear-btn" style="font-size:12px; padding:4px 12px; border:1px solid #ccc; border-radius:20px; background:#fff; color:#555; cursor:pointer;">Clear all</button>
+      </div>
+      <p id="no-res" style="font-size:13px; color:#888; text-align:center; padding:12px 0;">No trials yet — press Run trial for each pH above.</p>
+      <div style="overflow-x:auto;" id="res-wrap" class="hidden">
+        <table class="res-tbl"><thead><tr id="res-head"></tr></thead><tbody id="res-body"></tbody></table>
+      </div>
+    </div>
+    <div id="write-prompt-s2" class="write-prompt hidden"></div>
+    <div style="text-align:center;"><button class="run-btn" style="max-width:260px;" onclick="go(3)">Analyse results →</button></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="s3" class="hidden">
+    <div id="an-empty" class="card" style="text-align:center; padding:2rem;"><p style="color:#888; font-size:13px;">No results yet — go back and run some trials first.</p></div>
+    <div id="an-content" class="hidden">
+      <div id="overall-con-box" class="overall-con mid">
+        <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; opacity:0.7;">Overall consistency for this test</div>
+        <div style="font-size:40px; font-weight:700;" id="overall-con-val"></div>
+        <div style="font-size:13px; margin-top:4px;" id="overall-con-desc"></div>
+      </div>
+      <div class="write-prompt">Write this consistency % into your results table on the worksheet now.</div>
+      <div class="card">
+        <div class="stitle">Full results table</div>
+        <div style="overflow-x:auto;">
+          <table class="res-tbl"><thead><tr id="an-head"></tr></thead><tbody id="an-body"></tbody></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stitle">What your choices meant</div>
+        <div id="an-choices" style="font-size:13px; line-height:1.9;"></div>
+      </div>
+      <div class="card card-blue">
+        <div class="stitle" style="color:#1a3f6f;">What do your results show?</div>
+        <div id="an-conc" style="font-size:13px; line-height:1.7; color:#0C447C;"></div>
+      </div>
+      <button class="again-btn" id="again-btn">Run another test — back to design experiment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var PH_VALUES = [4.0, 5.0, 6.0, 7.0, 8.0];
+var MNOISE = { eye:0.65, scale:0.32, rgb:0.12, spec:0.05 };
+var MLABEL = { eye:'Eyeballing', scale:'1–5 scale', rgb:'Colorimeter', spec:'Spectrophotometer' };
+var CVARS = [
+  { id:'watering',  label:'Watering amount and frequency',          relevant:true,  noise:0.18 },
+  { id:'sunlight',  label:'Sunlight hours per day',                 relevant:true,  noise:0.15 },
+  { id:'temp',      label:'Temperature',                            relevant:true,  noise:0.14 },
+  { id:'potsize',   label:'Pot size',                               relevant:true,  noise:0.10 },
+  { id:'clones',    label:'Use cloned plants (identical genotype)', relevant:true,  noise:0.22 },
+  { id:'soilbrand', label:'Soil brand / type',                      relevant:true,  noise:0.12 },
+  { id:'music',     label:'Music played near the plants',           relevant:false, noise:0 },
+  { id:'potcolour', label:'Colour of the plant pot',                relevant:false, noise:0 },
+  { id:'moonphase', label:'Moon phase during growth',               relevant:false, noise:0 }
+];
+
+var S = { reps:1, measure:'rgb', results:{} };
+
+function getTotalNoise() {
+  var n = MNOISE[S.measure];
+  CVARS.forEach(function(v) {
+    if (v.relevant) { var cb = document.getElementById('cb-'+v.id); if (cb && !cb.checked) n += v.noise; }
+  });
+  return n;
+}
+
+function calcOverallConsistency() {
+  var phCons = [];
+  PH_VALUES.forEach(function(ph) {
+    if (S.results[ph] && S.results[ph].length > 0) {
+      var t = S.results[ph][S.results[ph].length-1];
+      phCons.push(Math.max(0, Math.round(100 - t.range)));
+    }
+  });
+  if (!phCons.length) return null;
+  return Math.round(phCons.reduce(function(a,b){return a+b;},0) / phCons.length);
+}
+
+function bscore(ph){ if(ph<=4.5)return 95; if(ph<=5.5)return 80; if(ph<=6.0)return 60; if(ph<=6.5)return 40; if(ph<=7.0)return 22; return 9; }
+function fcolor(s){ var v=Math.max(0,Math.min(100,s)); return 'rgb('+Math.round(60+(1-v/100)*170)+','+Math.round(20+(1-v/100)*100)+','+Math.round(180-(1-v/100)*60)+')'; }
+function cname(s){ if(s>80)return'Deep blue'; if(s>60)return'Blue-purple'; if(s>40)return'Purple'; if(s>25)return'Pink-purple'; if(s>12)return'Pink'; return'Red-pink'; }
+
+function init() {
+  document.getElementById('rep-slider').addEventListener('input', function(){ S.reps=parseInt(this.value); document.getElementById('rep-v').textContent=S.reps; });
+  document.getElementById('rel-check-btn').addEventListener('click', checkReliability);
+  document.getElementById('val-check-btn').addEventListener('click', checkValidity);
+  document.getElementById('clear-btn').addEventListener('click', clearTrials);
+  document.getElementById('again-btn').addEventListener('click', function(){ resetAll(); go(1); });
+  buildMbtns(); buildCBList(); buildPHGrid();
+}
+
+function buildMbtns() {
+  var c = document.getElementById('mbtns');
+  [['eye','Eyeballing'],['scale','1–5 scale'],['rgb','Colorimeter'],['spec','Spectrophotometer']].forEach(function(m){
+    var b = document.createElement('button'); b.className='mbtn'+(m[0]===S.measure?' active':''); b.textContent=m[1];
+    b.addEventListener('click', function(){ setM(m[0]); }); c.appendChild(b);
+  });
+}
+
+function buildCBList() {
+  var list = document.getElementById('cblist'); list.innerHTML='';
+  CVARS.forEach(function(v){
+    var item=document.createElement('div'); item.className='cbitem'; item.id='cb-item-'+v.id;
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.id='cb-'+v.id;
+    cb.addEventListener('change', function(){ document.getElementById('cb-item-'+v.id).className='cbitem'+(cb.checked?' checked':''); });
+    var span=document.createElement('span'); span.className='cb-text'; span.textContent=v.label;
+    var badge=document.createElement('span'); badge.className='cb-badge'; badge.id='cb-badge-'+v.id;
+    item.appendChild(cb); item.appendChild(span); item.appendChild(badge); list.appendChild(item);
+  });
+}
+
+function buildPHGrid() {
+  var grid = document.getElementById('ph-grid'); grid.innerHTML='';
+  PH_VALUES.forEach(function(ph){
+    var on = ph<6.5;
+    var card=document.createElement('div'); card.className='ph-card'; card.id='ph-card-'+ph;
+    var swatch=document.createElement('div'); swatch.className='ph-swatch'; swatch.id='ph-swatch-'+ph;
+    var plabel=document.createElement('div'); plabel.className='ph-label'; plabel.textContent='pH '+ph.toFixed(1);
+    var gene=document.createElement('div'); gene.className='ph-gene'; gene.style.background=on?'#eaf3de':'#fcebeb'; gene.style.color=on?'#27500A':'#791F1F'; gene.textContent=on?'Gene ON':'Gene OFF';
+    var btn=document.createElement('button'); btn.className='ph-btn'; btn.textContent='Run trial'; btn.id='ph-btn-'+ph;
+    btn.addEventListener('click', function(){ runPHTrial(ph); });
+    var repsEl=document.createElement('div'); repsEl.className='ph-reps'; repsEl.id='ph-reps-'+ph;
+    card.appendChild(swatch); card.appendChild(plabel); card.appendChild(gene); card.appendChild(btn); card.appendChild(repsEl);
+    grid.appendChild(card);
+  });
+}
+
+function runPHTrial(ph) {
+  var noise=getTotalNoise(), base=bscore(ph), scores=[];
+  for (var i=0; i<S.reps; i++) scores.push(Math.max(0,Math.min(100,base+(Math.random()-0.5)*noise*90)));
+  var avg=scores.reduce(function(a,b){return a+b;},0)/scores.length;
+  var range=S.reps>1?Math.max.apply(null,scores)-Math.min.apply(null,scores):0;
+  if (!S.results[ph]) S.results[ph]=[];
+  S.results[ph].push({ ph:ph, reps:S.reps, measure:S.measure, noise:noise, scores:scores, avg:avg, range:range });
+
+  var c=fcolor(avg);
+  document.getElementById('ph-swatch-'+ph).style.background=c;
+  document.getElementById('ph-reps-'+ph).innerHTML='<span style="color:#777;">'+scores.map(function(s){return Math.round(s);}).join(', ')+'</span>';
+  var btn=document.getElementById('ph-btn-'+ph); btn.textContent='Run again'; btn.className='ph-btn done';
+
+  renderResultsTable();
+
+  var con=calcOverallConsistency();
+  if (con!==null) {
+    var p=document.getElementById('write-prompt-s2'); p.classList.remove('hidden');
+    p.textContent='Overall consistency so far: '+con+'% — write this into your results table once you have run all 5 pH values.';
+  }
+}
+
+function getAllTrials() {
+  var out=[];
+  PH_VALUES.forEach(function(ph){ if(S.results[ph]) S.results[ph].forEach(function(t){ out.push(t); }); });
+  return out;
+}
+
+function buildTableHead(tr, reps) {
+  tr.innerHTML='';
+  var cols=['pH','Colour'];
+  for (var i=1; i<=Math.min(reps,5); i++) cols.push('Rep '+i);
+  if (reps>5) cols.push('Rep 6+');
+  cols.push('Mean','Range','Consistency');
+  cols.forEach(function(h){ var th=document.createElement('th'); th.textContent=h; tr.appendChild(th); });
+}
+
+function appendTrialRow(tbody, t) {
+  var tr=document.createElement('tr');
+  var c=fcolor(t.avg);
+  var con=Math.max(0,Math.round(100-t.range));
+  var cc=con>=70?'#27500A':con>=45?'#633806':'#791F1F';
+  var bgc=con>=70?'#eaf3de':con>=45?'#faeeda':'#fcebeb';
+  var repCells='';
+  for (var i=0; i<Math.min(t.reps,5); i++) repCells+='<td>'+(t.scores[i]!==undefined?Math.round(t.scores[i]):'')+'</td>';
+  if (t.reps>5) repCells+='<td style="color:#888;font-size:11px;">'+t.scores.slice(5).map(function(s){return Math.round(s);}).join(', ')+'</td>';
+  tr.innerHTML='<td><strong>'+t.ph.toFixed(1)+'</strong></td><td><span class="dot" style="background:'+c+'"></span>'+cname(t.avg)+'</td>'+repCells+'<td style="font-weight:600;">'+Math.round(t.avg)+'</td><td>'+Math.round(t.range)+'</td><td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:'+bgc+';color:'+cc+';">'+con+'%</span></td>';
+  tbody.appendChild(tr);
+}
+
+function renderResultsTable() {
+  var all=getAllTrials();
+  if (!all.length){ document.getElementById('no-res').classList.remove('hidden'); document.getElementById('res-wrap').classList.add('hidden'); return; }
+  document.getElementById('no-res').classList.add('hidden'); document.getElementById('res-wrap').classList.remove('hidden');
+  var maxReps=all.reduce(function(a,t){return Math.max(a,t.reps);},0);
+  buildTableHead(document.getElementById('res-head'),maxReps);
+  var tbody=document.getElementById('res-body'); tbody.innerHTML='';
+  all.forEach(function(t){ appendTrialRow(tbody,t); });
+}
+
+function clearTrials() {
+  S.results={};
+  PH_VALUES.forEach(function(ph){
+    var sw=document.getElementById('ph-swatch-'+ph); if(sw) sw.style.background='#e8e8e8';
+    var rp=document.getElementById('ph-reps-'+ph); if(rp) rp.innerHTML='';
+    var btn=document.getElementById('ph-btn-'+ph); if(btn){ btn.textContent='Run trial'; btn.className='ph-btn'; }
+  });
+  document.getElementById('res-body').innerHTML='';
+  document.getElementById('no-res').classList.remove('hidden');
+  document.getElementById('res-wrap').classList.add('hidden');
+  document.getElementById('write-prompt-s2').classList.add('hidden');
+}
+
+function resetAll() {
+  clearTrials();
+  S.reps=1; document.getElementById('rep-v').textContent='1'; document.getElementById('rep-slider').value=1;
+  S.measure='rgb';
+  document.querySelectorAll('.mbtn').forEach(function(b){ b.classList.toggle('active',b.textContent===MLABEL['rgb']); });
+  ['val-fb','rel-fb','acc-fb'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); });
+  CVARS.forEach(function(v){
+    var row=document.getElementById('cb-item-'+v.id), cb=document.getElementById('cb-'+v.id), badge=document.getElementById('cb-badge-'+v.id);
+    if(row) row.className='cbitem'; if(cb) cb.checked=false; if(badge){ badge.textContent=''; badge.style.display='none'; }
+  });
+}
+
+function checkValidity() {
+  var missed=[], wrongly=[];
+  CVARS.forEach(function(v){
+    var cb=document.getElementById('cb-'+v.id), row=document.getElementById('cb-item-'+v.id), badge=document.getElementById('cb-badge-'+v.id);
+    var ticked=cb.checked;
+    row.classList.remove('checked','rev-good','rev-bad','rev-missed'); badge.style.display='none';
+    if(v.relevant&&ticked){ row.classList.add('rev-good'); badge.textContent='correct'; badge.style.display=''; }
+    else if(v.relevant){ row.classList.add('rev-missed'); badge.textContent='should control this'; badge.style.display=''; missed.push(v.label); }
+    else if(ticked){ row.classList.add('rev-bad'); badge.textContent='not needed'; badge.style.display=''; wrongly.push(v.label); }
+  });
+  var el=document.getElementById('val-fb'); el.classList.remove('hidden');
+  if(!missed.length&&!wrongly.length){ el.className='fb fb-ok'; el.textContent='You correctly identified all the variables that need to be controlled — and left out the ones that have no effect on hydrangea colour.'; }
+  else{ var msg=''; if(missed.length) msg+='You missed: '+missed.join('; ')+'. These will add extra variation to your results. '; if(wrongly.length) msg+='Not needed: '+wrongly.join('; ')+'.'; el.className='fb fb-warn'; el.textContent=msg.trim(); }
+}
+
+function checkReliability() {
+  var el=document.getElementById('rel-fb'); el.classList.remove('hidden');
+  if(S.reps===1){ el.className='fb fb-warn'; el.textContent='1 repeat means a single result per pH. You cannot calculate a mean or spot anomalies.'; }
+  else if(S.reps===2){ el.className='fb fb-warn'; el.textContent='2 repeats is a start, but if they differ you cannot tell which is more reliable. Aim for at least 3.'; }
+  else if(S.reps<=4){ el.className='fb fb-ok'; el.textContent=S.reps+' repeats — good. You can calculate a mean and begin to spot anomalous results.'; }
+  else{ el.className='fb fb-ok'; el.textContent=S.reps+' repeats — excellent. Your mean will be very trustworthy and anomalies will stand out clearly.'; }
+}
+
+function setM(m) {
+  S.measure=m;
+  document.querySelectorAll('.mbtn').forEach(function(b){ b.classList.toggle('active',b.textContent===MLABEL[m]); });
+  var el=document.getElementById('acc-fb'); el.classList.remove('hidden');
+  var hints={ eye:{cls:'fb-hint',t:'Think: if two students look at the same flower, will they always agree on the colour?'}, scale:{cls:'fb-hint',t:'Think: a 1–5 scale is better than guessing, but is it precise enough to detect small colour differences?'}, rgb:{cls:'fb-good',t:'A colorimeter measures colour objectively. Any student using the same device will get the same result.'}, spec:{cls:'fb-good',t:'The most precise option — it measures exactly how much light is absorbed at each wavelength.'} };
+  var h=hints[m]; el.className='fb '+h.cls; el.textContent=h.t;
+}
+
+function updateSetupSummary() {
+  var el=document.getElementById('setup-sum'); if(!el) return;
+  var missed=[]; CVARS.forEach(function(v){ if(v.relevant){ var cb=document.getElementById('cb-'+v.id); if(cb&&!cb.checked) missed.push(v.label); } });
+  var ctrl=missed.length===0?'<span style="color:#27500A; font-weight:600;">all controlled</span>':'<span style="color:#854F0B; font-weight:600;">'+missed.length+' uncontrolled</span>';
+  el.innerHTML='Repeats: <strong>'+S.reps+'</strong> &nbsp;&middot;&nbsp; Method: <strong>'+MLABEL[S.measure]+'</strong> &nbsp;&middot;&nbsp; Variables: '+ctrl;
+}
+
+function renderAnalysis() {
+  var all=getAllTrials();
+  var empty=document.getElementById('an-empty'), content=document.getElementById('an-content');
+  if(!all.length){ empty.classList.remove('hidden'); content.classList.add('hidden'); return; }
+  empty.classList.add('hidden'); content.classList.remove('hidden');
+
+  var con=calcOverallConsistency(), conVal=con!==null?con:0;
+  var box=document.getElementById('overall-con-box');
+  box.className='overall-con '+(conVal>=70?'high':conVal>=45?'mid':'low');
+  document.getElementById('overall-con-val').textContent=conVal+'%';
+  var desc=conVal>=70?'Good consistency — your variables were well controlled and results are reliable.':conVal>=45?'Moderate consistency — some uncontrolled variables introduced variation.':'Low consistency — uncontrolled variables are adding a lot of variation.';
+  document.getElementById('overall-con-desc').textContent=desc;
+
+  var maxReps=all.reduce(function(a,t){return Math.max(a,t.reps);},0);
+  buildTableHead(document.getElementById('an-head'),maxReps);
+  var anBody=document.getElementById('an-body'); anBody.innerHTML='';
+  all.forEach(function(t){ appendTrialRow(anBody,t); });
+
+  var missed=[]; CVARS.forEach(function(v){ if(v.relevant){ var cb=document.getElementById('cb-'+v.id); if(cb&&!cb.checked) missed.push(v.label); } });
+  var html='';
+  if(missed.length>0){ html+='<div style="margin-bottom:8px;"><span class="tag" style="background:#fcebeb;color:#791F1F;">Validity</span>Uncontrolled: '+missed.join(', ')+'. Each added extra variation, reducing consistency.</div>'; }
+  else{ html+='<div style="margin-bottom:8px;"><span class="tag" style="background:#eaf3de;color:#27500A;">Validity</span>All relevant variables were controlled — variation is due to pH, not other factors.</div>'; }
+  if(S.reps>=3){ html+='<div style="margin-bottom:8px;"><span class="tag" style="background:#f1efe8;color:#5F5E5A;">Reliability</span>With '+S.reps+' repeats you can calculate a mean and spot anomalies. The range within each pH shows how repeatable your results were.</div>'; }
+  else{ html+='<div style="margin-bottom:8px;"><span class="tag" style="background:#f1efe8;color:#5F5E5A;">Reliability</span>With only '+S.reps+' repeat(s), it is hard to judge whether any result is typical. Try more repeats next time.</div>'; }
+  html+='<div><span class="tag" style="background:#f0eafb;color:#6a3abf;">Accuracy</span>Method: '+MLABEL[S.measure]+'. '+(S.measure==='eye'||S.measure==='scale'?'Subjective methods introduce extra variation because different people may record different values.':'Objective instruments reduce measurement error — they give the same reading regardless of who uses them.')+'</div>';
+  document.getElementById('an-choices').innerHTML=html;
+
+  var low=all.filter(function(t){return t.ph<=5.0;}), high=all.filter(function(t){return t.ph>=7.0;});
+  var concEl=document.getElementById('an-conc');
+  if(low.length>0&&high.length>0){
+    var la=Math.round(low.reduce(function(a,t){return a+t.avg;},0)/low.length), ha=Math.round(high.reduce(function(a,t){return a+t.avg;},0)/high.length);
+    concEl.textContent='In acidic soil (pH 4–5) the average colour score was '+la+'/100 — the anthocyanin gene was switched ON. In alkaline soil (pH 7–8) the average was '+ha+'/100 — the gene was switched OFF. The DNA sequence was unchanged; only the environment (pH) determined whether the gene was expressed.';
+  } else { concEl.textContent='Run trials at both acidic (pH 4–5) and alkaline (pH 7–8) to generate a conclusion here.'; }
+}
+
+function go(n) {
+  ['s0','s1','s2','s3'].forEach(function(id,i){ document.getElementById(id).classList.toggle('hidden',i!==n); });
+  document.querySelectorAll('.stab').forEach(function(t,i){ t.classList.toggle('active',i===n); });
+  if(n===2) updateSetupSummary();
+  if(n===3) renderAnalysis();
+}
+
+init();
+</script>
+</body>
+</html>
